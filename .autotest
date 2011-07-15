@@ -1,23 +1,34 @@
 # -*- ruby -*-
 
 require 'autotest/restart'
+Autotest.add_hook :initialize do |autotest|
+  autotest.add_mapping(/^spec\/.*_spec\.rb$/) do |file|
+    file
+  end
 
-# Autotest.add_hook :initialize do |at|
-#   at.extra_files << "../some/external/dependency.rb"
-#
-#   at.libs << ":../some/external"
-#
-#   at.add_exception 'vendor'
-#
-#   at.add_mapping(/dependency.rb/) do |f, _|
-#     at.files_matching(/test_.*rb$/)
-#   end
-#
-#   %w(TestA TestB).each do |klass|
-#     at.extra_class_map[klass] = "test/test_misc.rb"
-#   end
-# end
+  autotest.add_mapping(/^spec\/(controllers|helpers|lib|models|views)\/.*_spec\.rb$/) do|file|
+    file
+  end
 
-# Autotest.add_hook :run_command do |at|
-#   system "rake build"
-# end
+end
+
+module Autotest::Notify
+  def self.notify(title, msg, img, pri='low', time=3000)
+    `notify-send -i #{img} -u #{pri} -t #{time} '#{title}' '#{msg}'`
+  end
+
+  Autotest.add_hook :ran_command do |autotest|
+    begin
+      results = autotest.results
+      output = results.last.gsub(/\e\[(\d+)m/,'')
+      images = "~/Pictures/autotest_images"
+      if output  =~ /[1-9]\d*\sfailures?/
+        notify "Failure", "#{output}", "#{images}/fail.png", 'critical', 10000
+      else
+        notify "Passed", "#{output}", "#{images}/pass.png",'normal', 10000
+      end
+    rescue Exception => e
+      p "#{e.message} \n #{e.backtrace}"
+    end
+  end
+end
