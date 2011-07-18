@@ -1,1 +1,1 @@
-default: --format pretty -r features/support/env.rb -r features/support/plain.rb -r features/step_definitions features
+default: --format profile features --color
