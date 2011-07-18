@@ -14,6 +14,8 @@
 #
 #
 require 'rubygems'
+require 'bundler/setup'
+
 require 'uuid'
 require 'digest/md5'
 require 'yaml'
