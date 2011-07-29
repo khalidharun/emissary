@@ -2,17 +2,24 @@ GEM
   remote: http://rubygems.org/
   specs:
 <<<<<<< HEAD
+<<<<<<< HEAD
     ZenTest (4.6.0)
+=======
+    ZenTest (4.5.0)
+>>>>>>> Added a bunch o features and test suite setups
     amqp (0.6.7)
       eventmachine (>= 0.12.4)
     autotest (4.4.6)
       ZenTest (>= 4.4.1)
+<<<<<<< HEAD
     bert (1.1.2)
     builder (3.0.0)
     carrot (0.8.1)
     colored (1.2)
     cucumber (1.0.2)
 =======
+=======
+>>>>>>> Added a bunch o features and test suite setups
     bert (1.1.2)
     builder (3.0.0)
     colored (1.2)
@@ -28,10 +35,14 @@ GEM
     escape (0.0.4)
     eventmachine (0.12.10)
 <<<<<<< HEAD
+<<<<<<< HEAD
     facets (2.7.0)
 =======
     facets (2.9.1)
 >>>>>>> Added starts of support for cucumber/rspec/autotest
+=======
+    facets (2.7.0)
+>>>>>>> Added a bunch o features and test suite setups
     fastthread (1.0.7)
     gherkin (2.4.5)
       json (>= 1.4.6)
@@ -48,7 +59,11 @@ GEM
     rcov (0.9.10)
 =======
     rack (1.3.1)
+<<<<<<< HEAD
 >>>>>>> Added starts of support for cucumber/rspec/autotest
+=======
+    rcov (0.9.9)
+>>>>>>> Added a bunch o features and test suite setups
     rspec (2.6.0)
       rspec-core (~> 2.6.0)
       rspec-expectations (~> 2.6.0)
@@ -58,6 +73,7 @@ GEM
       diff-lcs (~> 1.1.2)
     rspec-mocks (2.6.0)
 <<<<<<< HEAD
+<<<<<<< HEAD
     servolux (0.9.6)
     sinatra (1.2.6)
       rack (~> 1.1)
@@ -65,11 +81,18 @@ GEM
     sys-cpu (0.6.3)
     term-ansicolor (1.0.6)
 =======
+=======
+    servolux (0.9.6)
+>>>>>>> Added a bunch o features and test suite setups
     sinatra (1.2.6)
       rack (~> 1.1)
       tilt (< 2.0, >= 1.2.2)
     term-ansicolor (1.0.5)
+<<<<<<< HEAD
 >>>>>>> Added starts of support for cucumber/rspec/autotest
+=======
+    termios (0.9.4)
+>>>>>>> Added a bunch o features and test suite setups
     tilt (1.3.2)
     unroller (1.0.0)
       colored
@@ -88,6 +111,9 @@ PLATFORMS
 
 DEPENDENCIES
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> Added a bunch o features and test suite setups
   ZenTest
   amqp (= 0.6.7)
   autotest
@@ -101,13 +127,18 @@ DEPENDENCIES
   escape
   eventmachine
 <<<<<<< HEAD
+<<<<<<< HEAD
   facets (~> 2.7.0)
 =======
 >>>>>>> Added starts of support for cucumber/rspec/autotest
+=======
+  facets (~> 2.7.0)
+>>>>>>> Added a bunch o features and test suite setups
   fastthread
   inifile
   monitor
   mq
+<<<<<<< HEAD
 <<<<<<< HEAD
   rcov
   rspec
@@ -116,5 +147,11 @@ DEPENDENCIES
 =======
   rspec
 >>>>>>> Added starts of support for cucumber/rspec/autotest
+=======
+  rcov
+  rspec
+  servolux
+  termios
+>>>>>>> Added a bunch o features and test suite setups
   uuid
   work_queue
