@@ -2,6 +2,13 @@
 
 require 'rubygems'
 require 'find'
+require 'yaml'
+require 'cucumber'
+#require 'cucumber/rake'
+
+require 'cucumber/rake/task' #I have to add this
+#require 'rspec/rake/spectask'
+require 'rspec/core/rake_task'
 
 def manifest_files
   manifest_files = [];
@@ -13,14 +20,14 @@ def manifest_files
     File.join(base_path, 'VERSION.yml'),
     File.join(base_path, 'LICENSE'),
   ]
-  
+
   Find.find(*search_paths) do |path|
     if File.directory? path
       File.basename(path)[/^\./] ? Find.prune : next
     end
     manifest_files << path.gsub(base_path + ::File::SEPARATOR, '')
   end
-  
+
   manifest_files
 end
 
@@ -30,7 +37,7 @@ AUTHOR      = 'Carl P. Corliss'
 EMAIL       = 'carl.corliss@nytimes.com'
 
 spec = Gem::Specification.new do |s|
-  s.name = GEM 
+  s.name = GEM
   s.version = GEM_VERSION
   s.author = AUTHOR
   s.email = EMAIL
@@ -58,8 +65,8 @@ spec = Gem::Specification.new do |s|
   s.add_dependency('work_queue',   '>= 1.0.0')
 end
 
-require 'rake/gempackagetask'
-Rake::GemPackageTask.new(spec) do |pkg|
+require 'rubygems/package_task'
+Gem::PackageTask.new(spec) do |pkg|
   pkg.need_tar = true
 end
 
@@ -90,7 +97,28 @@ namespace :manifest do
   end
 end
 
+namespace :rcov do
+  Cucumber::Rake::Task.new(:cucumber) do |t|
+    t.rcov = true
+    t.rcov_opts = %w{-Ilib}
+    #t.rcov_opts = %w{--exclude osx\/objc,gems\/,spec\/,features\/ --aggregate coverage.data --include lib}
+    #t.rcov_opts << %[-o "coverage"]
+  end
+
+  RSpec::Core::RakeTask.new(:rspec) do |t|
+    t.rcov = true
+    t.rcov_opts = %w{--exclude osx\/objc,gems\/,spec\/,features\/ --aggregate coverage.data}
+  end
+
+  desc "Run both specs and features to generate aggregated coverage"
+  task :all do |t|
+    rm "coverage.data" if File.exist?("coverage.data")
+    Rake::Task["rcov:cucumber"].invoke
+    Rake::Task["rcov:rspec"].invoke
+  end
+end
+
 rake_tasks_glob = File.join(File.dirname(File.expand_path(__FILE__)), 'tasks', '*.rake')
-Dir[rake_tasks_glob].sort.each do |ext| 
+Dir[rake_tasks_glob].sort.each do |ext|
   load ext
 end
