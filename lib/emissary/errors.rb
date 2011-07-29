@@ -19,18 +19,18 @@ module Emissary
     class ConnectionError < StandardError; end
     class InvalidMessageFormat < StandardError; end
     class NotImplementedError < StandardError; end
-    
+
     attr_reader :origin
 
     def self.new(*args) #:nodoc:
       allocate.instance_eval(<<-EOS, __FILE__, __LINE__)
         alias :original_instance_of? :instance_of?
         alias :original_kind_of? :kind_of?
-  
+
         def instance_of? klass
           self.original_instance_of? klass or origin.instance_of? klass
         end
-    
+
         def kind_of? klass
           self.original_kind_of? klass or origin.kind_of? klass
         end
@@ -43,14 +43,14 @@ module Emissary
     end
 
     def initialize(origin = Exception, message = '')
-      
+
       case origin
-        when Exception
-          @origin = origin
-        when Class
-          @origin = origin.new message
-        else
-          @origin = Exception.new message
+      when Exception
+        @origin = origin
+      when Class
+        @origin = origin.new message
+      else
+        @origin = Exception.new message
       end
 
       super message
@@ -63,10 +63,10 @@ module Emissary
     def origin_message
       origin.message
     end
-    
+
     def message
       "#{super}\n\t#{self.backtrace.join("\n\t")}\n" +
-      "Origin: #{origin.class}: #{origin_message}\n\t#{origin_backtrace.join("\n\t")}"
+        "Origin: #{origin.class}: #{origin_message}\n\t#{origin_backtrace}"
     end
   end
 end
@@ -99,7 +99,7 @@ if __FILE__ == $0
   rescue Emissary::Error => e
     puts "----------------- 3 -----------------\n#{e.message}"
   end
-  
+
   [ Exception, ArgumentError, Emissary::Error, Emissary::TrackingError, Emissary::NetworkEncapsulatedError].each do |k|
     puts "e.kind_of?(#{k.name}): #{e.kind_of? k}"
   end
