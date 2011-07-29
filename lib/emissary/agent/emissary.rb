@@ -29,14 +29,14 @@ module Emissary
       ::Emissary.identity.queue_name,
       ::Emissary.version
     ]
-    
+
     def valid_methods
       [ :reconfig, :selfupdate, :startup, :shutdown, :initdata, :reinit ]
     end
-    
+
     def reconfig new_config
       throw :skip_implicit_response if new_config.strip.empty?
-      
+
       if (test(?w, config[:agents][:emissary][:config_path]))
         begin
           ((tmp = Tempfile.new('new_config')) << new_config).flush
@@ -54,7 +54,7 @@ module Emissary
         ensure
           tmp.close
         end
-      end      
+      end
 
     end
 
@@ -72,7 +72,7 @@ module Emissary
           ::Emissary.logger.debug " -- SELFUPDATE -- [         VERSION: #{version}]"
           ::Emissary.logger.debug " -- SELFUPDATE -- [ CURRENT_VERSION: #{current_version}]"
           ::Emissary.logger.debug " -- SELFUPDATE -- [ REQUEST_VERSION: #{request_version}]"
-          
+
           notice = 'Emissary selfupdate skipped - ' + case true
             when request_version.nil?
               if version == :latest
@@ -100,7 +100,7 @@ module Emissary
         with_detached_process('emissary-selfupdate') do
           %x{
             emissary stop;
-            sleep 2; 
+            sleep 2;
             ps uxa | grep -v grep | grep '(emissary|emop_)' | awk '{ print $2 }' | xargs kill -9;
             sleep 1;
             source /etc/cloudrc;
@@ -111,7 +111,7 @@ module Emissary
         throw :skip_implicit_response
       end
     end
-    
+
     def startup
       message = initdata
       message.recipient = config[:startup]
@@ -119,13 +119,13 @@ module Emissary
       message
     end
     alias :reinit :startup
-    
+
     def initdata
       response = message.response
       response.args = INIT_DATA
       response
     end
-    
+
     def shutdown
       message.recipient = config[:shutdown]
       message.args = [

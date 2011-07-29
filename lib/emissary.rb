@@ -33,10 +33,10 @@ module Emissary
   PATH    = LIBPATH.dirname
   VERSION = ::YAML.load(File.read(PATH + 'VERSION.yml')).values.join '.'
 
-  EXTERNALS_BASE      = Pathname.new('/opt/emissary')
-  EXTERNAL_IDENTITIES = (EXTERNALS_BASE + 'identities').to_s
-  EXTERNAL_AGENTS     = (EXTERNALS_BASE + 'agents').to_s
-  EXTERNAL_OPERATORS  = (EXTERNALS_BASE + 'operators').to_s
+  EXTERNALS_BASE      = File.join('emissary')
+  EXTERNAL_IDENTITIES = File.join(EXTERNALS_BASE, 'identities').to_s
+  EXTERNAL_AGENTS     = File.join(EXTERNALS_BASE, 'agents').to_s
+  EXTERNAL_OPERATORS  = File.join(EXTERNALS_BASE, 'operator').to_s
 
   DEFAULT_EXCHANGE        = :direct
   DAEMON_RECHECK_INTERVAL = 10
