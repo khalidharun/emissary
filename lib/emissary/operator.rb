@@ -13,7 +13,7 @@
 #   limitations under the License.
 #
 #
-require 'monitor'
+#require 'monitor'
 require 'work_queue'
 require 'fastthread'
 
@@ -21,14 +21,14 @@ module Emissary
   module OperatorStatistics
     RX_COUNT_MUTEX = Mutex.new
     TX_COUNT_MUTEX = Mutex.new
-    
+
     attr_reader :rx_count, :tx_count
     def increment_tx_count
       TX_COUNT_MUTEX.synchronize {
         @tx_count = (@tx_count + 1 rescue 1)
       }
     end
-    
+
     def tx_count
       count = 0
       TX_COUNT_MUTEX.synchronize {
@@ -37,13 +37,13 @@ module Emissary
       }
       count
     end
-    
+
     def increment_rx_count
       RX_COUNT_MUTEX.synchronize {
         @rx_count = (@rx_count + 1 rescue 1)
       }
     end
-    
+
     def rx_count
       count = 0
       RX_COUNT_MUTEX.synchronize {
@@ -53,15 +53,15 @@ module Emissary
       count
     end
   end
-  
+
   class Operator
     include Emissary::OperatorStatistics
-    
+
     DEFAULT_STATUS_INTERVAL = 3600
     DEFAULT_MAX_WORKERS     = 50
     MAX_WORKER_TTL          = 60
-    
-    attr_reader   :config, :shutting_down, :signature 
+
+    attr_reader   :config, :shutting_down, :signature
 
     # Override .new so subclasses don't have to call super and can ignore
     # connection-specific arguments
@@ -76,10 +76,10 @@ module Emissary
 
         # post initialize callback
         post_init
-    
+
         # set signature nil
         @signature ||= Digest::MD5.hexdigest(config.to_s)
-        
+
         self
       end
     end
@@ -120,21 +120,21 @@ module Emissary
 
     def acknowledge message
     end
-    
+
     def reject message, requeue = true
     end
-    
+
     def send_data
       raise NotImplementedError, 'The send_data method must be defined by the operator module'
     end
-    
+
     def close
       raise NotImplementedError, 'The close method must be defined by the operator module'
     end
 
     def run
       @connected = !!connect
-      subscribe 
+      subscribe
       schedule_statistics_gatherer
       notify :startup
       connected?
@@ -146,23 +146,23 @@ module Emissary
     end
 
     def shutting_down?() @shutting_down; end
-    
+
     def shutdown!
       unless shutting_down?
         @shutting_down = true
-  
+
         Emissary.logger.info "Cancelling periodic timer for statistics gatherer..."
         @timer.cancel
-        
+
         Emissary.logger.notice "Shutting down..."
         notify :shutdown
-  
+
         Emissary.logger.info "Shutting down agent workqueue..."
         @agents.join
-  
+
         Emissary.logger.info "Shutting down publisher workqueue..."
         @publisher.join
-  
+
         Emissary.logger.info "Disconnecting..."
         disconnect
       end
@@ -173,21 +173,21 @@ module Emissary
         Emissary.logger.debug "Testing '#{what}' - it's disabled. Not a valid option."
         return false
       end
-      
+
       unless config[what]
         Emissary.logger.debug "Testing '#{what}' - it's disabled. Missing from configuration."
         return false
       end
-      
+
       if (config[:disable]||[]).include? what.to_s
         Emissary.logger.debug "Testing '#{what}' - it's disabled. Listed in 'disable' configuration option."
         return false
       end
-      
+
       Emissary.logger.debug "Testing '#{what}' - it's enabled.."
       return true
     end
-    
+
     def received message
       acknowledge message
     end
@@ -195,7 +195,7 @@ module Emissary
     def rejected message, opts = { :requeue => true }
       reject message, opts
     end
-    
+
     def receive message
       @agents.enqueue_b {
         begin
@@ -240,7 +240,7 @@ module Emissary
 
     def notify type
       return unless enabled? type and EM.reactor_running?
-      
+
       message = Emissary::Message.new(:data => { :agent => :emissary, :method => type })
       case type
         when :startup, :shutdown
@@ -253,21 +253,21 @@ module Emissary
       Emissary.logger.notice "Running #{type.to_s.capitalize} Notifier"
       receive message
     end
-    
+
     def schedule_statistics_gatherer
       stats_interval = enabled?(:stats) && config[:stats][:interval] ? config[:stats][:interval].to_i : DEFAULT_STATUS_INTERVAL
-      
+
       # setup agent to process sending of messages
       @timer = EM.add_periodic_timer(stats_interval) do
         rx = rx_count; tx = tx_count
         rx_throughput = sprintf "%0.4f", (rx.to_f / stats_interval.to_f)
         tx_throughput = sprintf "%0.4f", (tx.to_f / stats_interval.to_f)
-        
+
         Emissary.logger.notice "[statistics] publisher tasks/workers: #{@publisher.cur_tasks}/#{@publisher.cur_threads}"
         Emissary.logger.notice "[statistics] dispatcher tasks/workers: #{@agents.cur_tasks}/#{@agents.cur_threads}"
         Emissary.logger.notice "[statistics] #{tx} in #{stats_interval} seconds - tx rate: #{tx_throughput}/sec"
         Emissary.logger.notice "[statistics] #{rx} in #{stats_interval} seconds - rx rate: #{rx_throughput}/sec"
-        
+
         notify :stats
       end
     end

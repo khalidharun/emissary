@@ -28,13 +28,13 @@ module Emissary
 
       REQUIRED_KEYS   = [ :uri, :subscriptions ]
       VALID_EXCHANGES = [ :headers, :topic, :direct, :fanout ]
-      
+
       attr_accessor :subscriptions
       attr_accessor :not_acked
-      
+
       @@queue_count = 1
-      
-      def validate_config! 
+
+      def validate_config!
         errors = []
         errors << 'config not a hash!' unless config.instance_of? Hash
 
@@ -47,7 +47,7 @@ module Emissary
         [ :user, :password, :host, :path ].each do |v|
             errors << "invalid value 'nil' for URI part [#{v}]" if u.respond_to? v and u.send(v).nil?
         end
-        
+
         raise errors.join("\n") unless errors.empty?
         return true
       end
@@ -65,7 +65,7 @@ module Emissary
           :port  => uri.port || (ssl ? 5671 : 5672),
           :logging => !!@config[:debug],
         }
-        
+
         # normalize the subscriptions
         @subscriptions = @config[:subscriptions].inject({}) do |hash,queue|
           key, type = queue.split(':')
@@ -73,14 +73,14 @@ module Emissary
           (hash[type] ||= []) << key
           hash
         end
-        
+
         # one unique receiving queue per connection
         @queue_name = "#{Emissary.identity.queue_name}.#{@@queue_count}"
         @@queue_count += 1
-        
+
         @not_acked = {}
       end
-      
+
       def connect
         if @connect_details[:ssl] and not EM.ssl?
           raise ::Emissary::Error::ConnectionError ,
@@ -91,7 +91,7 @@ module Emissary
 
         @connection = ::AMQP.connect(@connect_details)
         @channel = ::MQ.new(@connection)
-        
+
         @queue_config = {
           :durable     => @config[:queue_durable].nil?     ? false : @config[:queue_durable],
           :auto_delete => @config[:queue_auto_delete].nil? ? true  : @config[:queue_auto_delete],
@@ -99,15 +99,15 @@ module Emissary
         }
 
         @queue = ::MQ::Queue.new(@channel, @queue_name, @queue_config)
-        
+
         @exchanges = {}
         @exchanges[:topic]  = ::MQ::Exchange.new(@channel, :topic,  'amq.topic')
         @exchanges[:fanout] = ::MQ::Exchange.new(@channel, :fanout, 'amq.fanout')
         @exchanges[:direct] = ::MQ::Exchange.new(@channel, :direct, 'amq.direct')
-        
+
         true
       end
-      
+
       def subscribe
         @subscriptions.each do |exchange, keys|
           keys.map do |routing_key|
@@ -117,7 +117,7 @@ module Emissary
         end
 
         # now bind to our name directly so we get messages that are
-        # specifically for us 
+        # specifically for us
         @queue.bind(@exchanges[:direct], :key => Emissary.identity.queue_name)
 
         @queue.subscribe(:ack => true) do |info, message|
@@ -127,11 +127,11 @@ module Emissary
             message = Emissary::Message.new
             message.errors << e
           end
-          
+
           @not_acked[message.uuid] = info
           Emissary.logger.debug "Received through '#{info.exchange}' and routing key '#{info.routing_key}'"
 
-          receive message 
+          receive message
         end
       end
 
@@ -142,14 +142,14 @@ module Emissary
             @queue.unbind(@exchanges[exchange], :key => routing_key)
           end
         end
-        
+
         Emissary.logger.info "Unsubscribing from my own queue."
         @queue.unbind(@exchanges[:direct], :key => Emissary.identity.queue_name)
 
         Emissary.logger.info "Cancelling all subscriptions."
         @queue.unsubscribe # could get away with only calling this but, the above "feels" cleaner
       end
-      
+
       def send_data msg
         begin
           Emissary.logger.debug "Sending message through exchange '#{msg.exchange_type.to_s}' with routing key '#{msg.routing_key}'"
@@ -159,32 +159,32 @@ module Emissary
           raise InvalidExchange, "publish request on invalid exchange '#{msg.exchange_type}' with routing key '#{msg.routing_key}'"
         end
       end
-      
+
       def acknowledge message
         unless message.kind_of? Emissary::Message
-          Emissary.logger.warning "Can't acknowledge message not deriving from Emissary::Message class" 
+          Emissary.logger.warning "Can't acknowledge message not deriving from Emissary::Message class"
         end
-        
-        @not_acked.delete(message.uuid).ack 
+
+        @not_acked.delete(message.uuid).ack
         Emissary.logger.debug "Acknowledged Message ID: #{message.uuid}"
       rescue NoMethodError
         Emissary.logger.warning "Message with UUID #{message.uuid} not acknowledged."
       rescue Exception => e
         Emissary.logger.error "Error in Emissary::Operator::AMQP#acknowledge: #{e.class.name}: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
       end
-      
+
       def reject message, opts = { :requeue => true }
         return true # currently not implemented in RabbitMQ 1.7.x (coming in versions supporting 0.9.1 AMQP spec)
         unless message.kind_of? Emissary::Message
-          Emissary.logger.warning "Unable to reject message not deriving from Emissary::Message class" 
+          Emissary.logger.warning "Unable to reject message not deriving from Emissary::Message class"
         end
-        
+
         @not_acked.delete(message.uuid).reject(opts)
         Emissary.logger.debug "Rejected Message ID: #{message.uuid}"
       rescue Exception => e
         Emissary.logger.error "Error in AMQP::Reject: #{e.class.name}: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
       end
-      
+
       def close
         # Note: NOT currently supported by current version of RabbitMQ (1.7.x)
         #Emissary.logger.info "Requeueing unacknowledged messages"
@@ -195,9 +195,9 @@ module Emissary
         # to sleeping for 1s to ensure our message went out
         sleep 1 # XXX: HACK HACK HACK - BAD BAD BAD :-(
         unsubscribe
-        ::AMQP.stop 
+        ::AMQP.stop
       end
-      
+
       def status
       end
     end

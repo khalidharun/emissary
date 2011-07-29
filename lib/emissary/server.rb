@@ -14,40 +14,42 @@
 #
 #
 require 'emissary/servolux'
+require 'emissary/logger'
 require 'eventmachine'
 
 module Emissary
   class Server < Servolux::Server
     attr_accessor :running
-    
+
     def initialize(name, opts = {}, &block)
-      opts[:logger] = Emissary.logger
+      opts[:logger] ||= Emissary::Logger.instance #Pass in a logger or default to Emissary.logger instance
+      @logger = opts[:logger]
       @running = false
       @operator = opts.delete(:operator) or raise Emissary::Error.new(ArgumentError, "Operator not provided")
-  
-      at_exit { shutdown! :graceful }    
+
+      at_exit { shutdown! :graceful }
       super(name, opts, &block)
     end
-    
+
     def running?() !!@running; end
-  
+
     def shutdown! type = :graceful
       begin
         case type
           when :graceful
-            @operator.shutdown! unless not @operator.connected?
-            EM.stop_event_loop
+            @operator.shutdown! if @operator.connected?
+            EventMachine::stop_event_loop
         end
       rescue Exception => e
-        Emissary.logger.error "Exception caught during graceful shutdown: #{e.class.name}: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
+        @logger.error "Exception caught during graceful shutdown: #{e.class.name}: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
       ensure
-        exit!(0)
+        Kernel.exit!(0)
       end
     end
-    
+
     alias :int :shutdown!
     alias :term :shutdown!
-    
+
     # override Servolux::Server's startup because we don't need threaded here.
     # also, we want to enforce exiting on completion of startup's run
     def startup
@@ -55,6 +57,7 @@ module Emissary
 
       begin
         create_pid_file
+        logger.debug "created pid"
         trap_signals
         run
       rescue Exception => e
@@ -66,33 +69,38 @@ module Emissary
         delete_pid_file
         shutdown! :hard
       end
-      
+
       return self
     end
 
     def run
-      return unless not running?
+      return if running?
 
-      thr = Thread.new { EM.run }
-
-      begin
-        EM.add_periodic_timer(0.5) { @operator.shutdown! unless not @operator.shutting_down? }
+      EM.run {
+        EM.add_periodic_timer(0.5) {
+          begin
+            @operator.shutdown! if @operator.shutting_down?
+          rescue Exception => e
+            shutdown! :graceful
+          end
+        }
 
         begin
-          $0 = @name
-          logger.info "Starting up new Operator process"
-          @running = @operator.run
+          begin
+            $0 = @name
+            logger.info "Starting up new Operator process"
+            @running = @operator.run
+          rescue Exception => e
+            Emissary.logger.error "Server '#{$0}': #{e.class.name}: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
+            raise e
+          end
+        rescue ::Emissary::Error::ConnectionError => e
+          shutdown! :hard
         rescue Exception => e
-          Emissary.logger.error "Server '#{$0}': #{e.class.name}: #{e.message}\n\t#{e.backtrace.join("\n\t")}"
-          raise e
+          shutdown! :graceful
         end
-      rescue ::Emissary::Error::ConnectionError => e
-        shutdown! :hard
-      rescue Exception => e
-        shutdown! :graceful
-      end
-
-      thr.join
+      }
     end
   end
+
 end
