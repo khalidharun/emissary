@@ -17,6 +17,9 @@ require 'digest/md5'
 require 'base64'
 require 'etc'
 
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..')
+require 'agent'
+
 module Emissary
   class Agent::Sshkeys < Agent
     AUTH_KEY_FILE = '.ssh/authorized_keys'

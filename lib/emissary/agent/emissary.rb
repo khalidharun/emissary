@@ -15,6 +15,10 @@
 #
 require 'tempfile'
 require 'fileutils'
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..')
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..', '..')
+require 'agent'
+require 'emissary'
 
 module Emissary
   class Agent::Emissary < Agent
