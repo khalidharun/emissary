@@ -13,6 +13,10 @@
 #   limitations under the License.
 #
 #
+
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..')
+require 'identity'
+
 module Emissary
   class Identity::Unix < Identity
     # defaults to priority 0 (which means, it's the last option if nothing else takes it)

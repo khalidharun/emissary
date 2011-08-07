@@ -16,17 +16,22 @@
 require 'net/http'
 require 'socket'
 
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..')
+require 'emissary'
+
 module Emissary
   class Identity
-    
-    INTERNAL_IDENTITY_GLOB = ::File.join(Emissary::LIBPATH, 'emissary', 'identity', '*.rb')
-    EXTERNAL_IDENTITY_GLOB = ::File.join(Emissary::EXTERNAL_IDENTITIES, '*.rb')
-    
+
+    INTERNAL_IDENTITY_GLOB = ::File.join(Emissary::LIBPATH, 'emissary', 'identity', '*.rb') \
+      unless defined? INTERNAL_IDENTITY_GLOB
+    EXTERNAL_IDENTITY_GLOB = ::File.join(Emissary::EXTERNAL_IDENTITIES, '*.rb') \
+      unless defined? EXTERNAL_IDENTITY_GLOB
+
     attr_reader :loaded, :methods
     alias :loaded? :loaded
 
     private :initialize
-    
+
     def initialize
       @loaded     = false
       @methods    = nil
@@ -36,7 +41,7 @@ module Emissary
     def self.instance
       @@instance ||= self.new
     end
-    
+
     def self.new(*largs)
       # prevent subclasses from being instantiated directly, except through
       # the identities() method of this parent class. This class is just a
@@ -55,21 +60,21 @@ module Emissary
       EOS
     end
 
-    # Delegation Factory - Uses registered high priority subclasses 
-    # for delegation of method calls, falling back to lower priority 
+    # Delegation Factory - Uses registered high priority subclasses
+    # for delegation of method calls, falling back to lower priority
     # subclasess when the method isn't available or throws a :pass
     # in the higher priority subclass
     #
     def method_missing name, *args
       # don't perform lookups on subclasses
       super name, *args unless self.class == Emissary::Identity
-      
+
       name = name.to_sym
       unless (@methods||={}).has_key? name
         method_delegate = value = nil
 
         # loop through each possible identity, higher priority identities
-        # first (0 == low, > 0 == higher). 
+        # first (0 == low, > 0 == higher).
         identities.each do |id,object|
           value = nil
           if object.respond_to?(name)
@@ -80,17 +85,17 @@ module Emissary
             break unless method_delegate.nil?
           end
         end
-        
+
         # if we've gone through all the possible delegates, then pass it
         # up to the superclass (in this case, Object)
         if method_delegate.nil?
           return super(name, *args)
         end
-        
+
         @methods[name] = method_delegate
         return value
       end
- 
+
       return @methods[name].__send__(name, *args)
     end
 
@@ -100,9 +105,9 @@ module Emissary
       else
         # unix identity always gets zero - though this locks us
         # into *nix as our base. XXX maybe rethink this?
-        0 
+        0
       end
-      
+
       (self.registry[priority] ||= [])  << name
     end
 
@@ -140,15 +145,15 @@ module Emissary
     end
 
     private
-    
+
     def self.registry
       @@registry ||= []
     end
-    
+
     # Loads all available identities included with this gem
     #
     def load_identities
-      return unless not !!loaded? 
+      return unless not !!loaded?
 
       Dir[INTERNAL_IDENTITY_GLOB, EXTERNAL_IDENTITY_GLOB].reject do |id|
         self.class.exclusions.include?("/#{id.to_s.downcase}.rb")

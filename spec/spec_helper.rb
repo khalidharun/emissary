@@ -2,6 +2,7 @@ require 'rubygems'
 require 'bundler'
 require 'rspec'
 require 'emissary/errors'
+require 'emissary'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__) + '/../lib')
 
