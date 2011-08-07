@@ -165,7 +165,7 @@ module Emissary
 
       case line
         # ignore blank lines and comment lines
-      when @rgxp_comment: return
+      when @rgxp_comment then return
 
         # this is a section declaration
       when @rgxp_section

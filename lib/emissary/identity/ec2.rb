@@ -20,10 +20,10 @@ module Emissary
   class Identity::Ec2 < Identity
     register :ec2, :priority => 25
 
-    QUERY_IP         = '169.254.169.254'
-    INSTANCE_ID_PATH = '/latest/meta-data/instance-id'
-    LOCAL_IPV4_PATH  = '/latest/meta-data/local-ipv4'
-    PUBLIC_IPV4_PATH = '/latest/meta-data/public-ipv4'
+    QUERY_IP         = '169.254.169.254' unless defined? QUERY_IP
+    INSTANCE_ID_PATH = '/latest/meta-data/instance-id' unless defined? INSTANCE_ID_PATH
+    LOCAL_IPV4_PATH  = '/latest/meta-data/local-ipv4' unless defined? LOCAL_IPV4_PATH
+    PUBLIC_IPV4_PATH = '/latest/meta-data/public-ipv4' unless defined? PUBLIC_IPV4_PATH
 
     def initialize
       @instance_id = nil
