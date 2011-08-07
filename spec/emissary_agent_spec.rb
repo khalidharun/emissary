@@ -1,4 +1,4 @@
-require 'spec/spec_helper'
+require 'spec_helper'
 require 'emissary/agent'
 
 module Emissary
@@ -26,12 +26,11 @@ module Emissary
 
     describe "#post_init" do
       it "should do nothing" do
-        dd
       end
     end
 
     describe "#valid_methods" do
-      it "sholuld raiseerror" do
+      it "should raise error" do
       end
     end
     describe "#activate"
