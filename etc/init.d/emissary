@@ -6,7 +6,8 @@
 # description: emissary provides support for handling of network events.
 
 CONFIG_FILE=/etc/emissary/config.ini
-EMISSARY_EXECUTABLE="$(ruby -rrubygems -e 'puts Gem.bindir')/emissary"
+##  Do this to ensure that RVM is used (invoke a subshell) if it exists on the system.  No harm otherwise
+EMISSARY_EXECUTABLE=$(/bin/sh -l -c "ruby -rrubygems -e 'puts Gem.bindir'")/emissary
 
 [ -f "${CONFIG_FILE}" ] || exit 0
 

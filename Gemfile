@@ -9,7 +9,7 @@ gem "inifile"
 gem "monitor"
 gem "mq"
 gem "uuid"
-gem "work_queue"
+gem "work_queue", '~> 2.0'
 gem "servolux"
 gem 'carrot', '~> 0.8.1'
 gem 'facets', '~> 2.7.0'
