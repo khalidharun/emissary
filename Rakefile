@@ -56,7 +56,7 @@ spec = Gem::Specification.new do |s|
   s.add_dependency('eventmachine', '>= 0.12.10')
   s.add_dependency('servolux',     '>= 0.9.4')
   s.add_dependency('uuid',         '>= 2.3.0')
-  s.add_dependency('work_queue',   '= 2.0.0')
+  s.add_dependency('work_queue',   '= 1.0.0')
 end
 
 require 'rubygems/package_task'
