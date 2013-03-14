@@ -3,6 +3,7 @@
 require 'rubygems'
 require 'find'
 require 'yaml'
+require 'monitor'
 
 def manifest_files
   manifest_files = [];

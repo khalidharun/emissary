@@ -32,7 +32,7 @@ module Emissary
     end
   end
 
-  class ConfigFile < IniFile
+  class ConfigFile < Emissary::IniFile
 
     attr_reader :ini
     def initialize( filename, opts = {} )

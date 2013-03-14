@@ -24,3 +24,4 @@ group :test do
   gem "ZenTest"
   gem 'rcov'
 end
+gem 'rake'

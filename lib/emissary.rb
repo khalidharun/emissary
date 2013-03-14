@@ -221,6 +221,6 @@ end # module Emissary
 
 $:.unshift Emissary::LIBPATH.to_s
 
-[ :errors, :logger, :operator, :agent, :identity, :message, :config, :gem_helper ].each do |sublib|
+[ :inifile, :errors, :logger, :operator, :agent, :identity, :message, :config, :gem_helper ].each do |sublib|
   require Emissary.sublib_path sublib.to_s
 end

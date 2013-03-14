@@ -26,6 +26,7 @@ lib/emissary/agent/mysql.rb
 lib/emissary/agent/gem.rb
 lib/emissary/agent/file.rb
 lib/emissary/agent/error.rb
+lib/emissary/inifile.rb
 lib/emissary/agent/emissary.rb
 etc/init.d/emissary
 etc/emissary/config.ini

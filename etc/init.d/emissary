@@ -11,41 +11,41 @@ EMISSARY_EXECUTABLE=$(/bin/sh -l -c "ruby -rrubygems -e 'puts Gem.bindir'")/emis
 
 [ -f "${CONFIG_FILE}" ] || exit 0
 
-. /etc/rc.d/init.d/functions
+start() {
+    # Start daemon.
+    echo -n "Starting emissary: "
+    ${EMISSARY_EXECUTABLE} -d --config-file ${CONFIG_FILE} start
+    [ "$?" -eq 0 ] && echo "ok" || echo "failed"
+}
 
-if [ -f /etc/sysconfig/emissary ]; then
-	. /etc/sysconfig/emissary
-fi
+stop() {
+    # Stop daemon.
+    echo -n "Shutting down emissary: "
+    /usr/bin/pkill -f '(emop_node|emissary-master)'
+    [ "$?" -eq 0 ] && echo "ok" || echo "failed"
+}
 
 # See how we were called.
 case "$1" in
   start)
-    # Start daemon.
-    echo -n "Starting emissary: "
-    daemon ${EMISSARY_EXECUTABLE} -d --config-file ${CONFIG_FILE} start
-    touch /var/lock/subsys/emissary
-    echo    
+    start;
     ;;
   stop)
-    # Stop daemon.
-    echo -n "Shutting down emissary: "
-    daemon ${EMISSARY_EXECUTABLE} --config-file ${CONFIG_FILE} stop
-    echo
-    rm -f /var/lock/subsys/emissary
+    stop;
     ;;
   restart)
-    daemon ${EMISSARY_EXECUTABLE} --config-file ${CONFIG_FILE} restart
+    echo 'Restarting emissary: '
+    stop;
+    start;
     ;;
   status)
-    daemon ${EMISSARY_EXECUTABLE} --config-file ${CONFIG_FILE} status
+    ${EMISSARY_EXECUTABLE} --config-file ${CONFIG_FILE} status
     ;;
-  reconfig)
-    daemon ${EMISSARY_EXECUTABLE} --config-file ${CONFIG_FILE} reconfig
-  	;;
   *)
-    echo "Usage: emissary {start|stop|restart|status|reconfig}"
+    echo "Usage: emissary {start|stop|restart|status}"
     exit 1
     ;;
 esac
 
 exit 0
+
